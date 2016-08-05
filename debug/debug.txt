@@ -1,0 +1,151 @@
+childWebPageA: Feel : 389
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 7
+childWebPageB: Drifts : 218
+childWebPageB: Excessive play : 219
+childWebPageB: Pulls : 220
+childWebPageB: Pulsation : 221
+childWebPageB: Shimmy : 222
+childWebPageB: Sway : 223
+childWebPageB: Vibration : 224
+childWebPageA: Hear : 386
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 7
+childWebPageB: Squeal : 158
+childWebPageB: Hiss : 159
+childWebPageB: Knock : 160
+childWebPageB: Tap : 161
+childWebPageB: Rattle : 162
+childWebPageB: Chirp : 163
+childWebPageB: Clunk : 164
+childWebPageA: See : 390
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 4
+childWebPageB: Smoke : 243
+childWebPageB: Puddle or leak : 245
+childWebPageB: Tire looks flat : 246
+childWebPageB: Warning light is on : 412
+childWebPageA: Smell : 388
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 6
+childWebPageB: Gasoline : 165
+childWebPageB: Rotten eggs : 166
+childWebPageB: Mildew : 167
+childWebPageB: Antifreeze (sweet smell) : 168
+childWebPageB: Burning oil : 169
+childWebPageB: Exhaust smell : 170
+childWebPageA: Ugh! : 387
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 7
+childWebPageB: The engine cranks normally but does not start : 127
+childWebPageB: The engine cranks over slowly : 128
+childWebPageB: The vehicle is backfiring when trying to start : 129
+childWebPageB: Nothing : 130
+childWebPageB: One strong click or knock : 131
+childWebPageB: A spinning, whinning, or gear grinding sound : 132
+childWebPageB: Repeating clicking sound: "click, click, click" : 133
+childWebPageA: Brakes : 400
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 8
+childWebPageB: My brakes are grinding. : 93
+childWebPageB: My brakes are squealing. : 94
+childWebPageB: My brakes pull. : 95
+childWebPageB: I have a hard brake pedal. : 96
+childWebPageB: I have a spongy or low brake pedal. : 97
+childWebPageB: I have a pulsating brake pedal. : 98
+childWebPageB: My brake warning light is on. : 99
+childWebPageB: My ABS light is on. : 100
+childWebPageA: Check Engine & Warning Lights : 413
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 8
+childWebPageB: Check Engine Light : 414
+childWebPageB: Tire Pressure Light (TPMS) : 415
+childWebPageB: Temperature Warning Light : 416
+childWebPageB: Battery Charge Warning Light : 417
+childWebPageB: Oil Pressure Warning Light : 418
+childWebPageB: Brake Warning Light : 419
+childWebPageB: ABS Warning Light : 420
+childWebPageB: Check Engine Light on with code P0382 or, P0400-P0408 : 421
+childWebPageA: Electrical Accessories : 404
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 3
+childWebPageB: Power Windows : 240
+childWebPageB: Power Mirrors : 241
+childWebPageB: Wipers : 242
+childWebPageA: Engine : 401
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 4
+childWebPageB: Overheating : 123
+childWebPageB: Vehicle runs hot : 124
+childWebPageB: Engine vibration : 125
+childWebPageB: Engine missfiring, or loss of power : 126
+childWebPageA: Engine Performance : 405
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 9
+childWebPageB: Hesitation : 73
+childWebPageB: High Idle : 74
+childWebPageB: Idle fluctuates : 75
+childWebPageB: Rough running engine : 76
+childWebPageB: Stalling : 77
+childWebPageB: Ignition misfire : 78
+childWebPageB: Idle drops and almost dies : 79
+childWebPageB: Carburetor engine stalling and running rough at low RPM : 80
+childWebPageB: Rough idle : 81
+childWebPageA: Exterior Body : 403
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 5
+childWebPageB: Front : 31
+childWebPageB: Rear : 34
+childWebPageB: Right Side (Passenger) : 449
+childWebPageB: Left Side (Drivers) : 450
+childWebPageB: Soft top damaged : 35
+childWebPageA: Heating & Air Conditioning : 410
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 6
+childWebPageB: No cold air when A/C is on : 108
+childWebPageB: No hot air when heat is on : 109
+childWebPageB: No air out of the vents when I turn on the a/c or heat : 110
+childWebPageB: Windshield fogs up with the defroster setting on : 111
+childWebPageB: Rear defroster is not working : 112
+childWebPageB: The fan speeds are not working properly e.g., High works but the other speeds do not. : 113
+childWebPageA: Lights : 408
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 5
+childWebPageB: Headlights : 292
+childWebPageB: Turn signals : 293
+childWebPageB: Tail light : 294
+childWebPageB: Brake lights : 295
+childWebPageB: Damaged Light Assembly : 439
+childWebPageA: Steering & Handling : 411
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 8
+childWebPageB: My steering wheel shakes : 284
+childWebPageB: My steering wheel is hard to turn : 285
+childWebPageB: My vehicle drifts : 286
+childWebPageB: My vehicle pulls : 287
+childWebPageB: My vehicle bounces excessively over bumps : 288
+childWebPageB: My vehicle bottoms out over bumps : 289
+childWebPageB: I hear a squealing sound when turning the wheel : 290
+childWebPageB: I hear a clunking sound when turning : 291
+childWebPageA: Tires & Wheels : 406
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 2
+childWebPageB: Wheels : 253
+childWebPageB: Tires : 254
+childWebPageA: Transmission : 402
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 4
+childWebPageB: Manual Transmission : 194
+childWebPageB: Automatic transmission : 195
+childWebPageB: 4 wheel drive : 196
+childWebPageB: All wheel drive : 197
+childWebPageA: Upholstery & Interior : 409
+webPageListB.size(): 1
+webPageB.getChildWebPageList().size(): 7
+childWebPageB: Damaged dashboard : 365
+childWebPageB: Damaged carpet : 366
+childWebPageB: Power outlet does not work : 367
+childWebPageB: Power seats not working : 368
+childWebPageB: Rear defroster is not working : 369
+childWebPageB: Seat belt not reatracting properly : 370
+childWebPageB: Seat belt not locking : 371
