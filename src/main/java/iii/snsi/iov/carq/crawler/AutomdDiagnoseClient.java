@@ -29,6 +29,10 @@ public class AutomdDiagnoseClient {
 	private final String baseUrl = "https://www.automd.com";
 	private WebClient client = null;
 
+	private static Integer queryCount = 0;
+	private static Integer problemCount = 0;
+	private static Integer inspectionStepCount = 0;
+
 	// Pair: http://stackoverflow.com/a/521235
 	public class Pair<K, V> {
 
@@ -118,6 +122,7 @@ public class AutomdDiagnoseClient {
 	}
 	
 	public HttpsURLConnection httpRequest(String queryUrl, String queryMethod, List<Pair<String, String>> queryParam) throws Exception {
+		System.out.println("queries: " + ++queryCount);
 		Query query = new Query();
 		
 		String url = queryUrl;
@@ -172,6 +177,7 @@ public class AutomdDiagnoseClient {
 
 	// extract data and build problem
 	private AutomdProblem buildProblem(String queryUrl) throws Exception{
+		System.out.println("problems: " + ++problemCount);
 		AutomdProblem problem = new AutomdProblem();
 		
 		List<Pair<String, String>> queryParam = Collections.<Pair<String, String>> emptyList();
@@ -180,22 +186,25 @@ public class AutomdDiagnoseClient {
 		Document doc = Jsoup.parse(response);
 		
 		String title = doc.select("h2.flat-heading-h1.mb20").text();
-		String description = doc.select("div.col-sm-12.col-md-8.content-main-left.clearfix.p.flat-paragraph").text();
+		String description = doc.select("div.col-sm-12.col-md-8.content-main-left.clearfix").get(0).select("p.flat-paragraph").text();
 		
 		// create list of inspection steps
 		List<String> inspectionSteps = new ArrayList<String>();
 		
 		// a single inspection guide with multiple stepElements (check later to see if there are multiple inspectionGuides, then refactor code)
 		Elements stepElements = doc.select("div.inspection-guide").get(0).select("div.step.clearfix");
-		System.out.println("stepElements.size(): " + stepElements.size());
+		//System.out.println("stepElements.size(): " + stepElements.size());
 		for(Element stepElement : stepElements){
 			inspectionSteps.add(stepElement.select("div.content").get(0).select("p.flat-paragraph").text());
-			System.out.println(stepElement.select("div.content").get(0).select("p.flat-paragraph").text());
+			System.out.println("inspectionSteps: " + ++inspectionStepCount);
+			//System.out.println(stepElement.select("div.content").get(0).select("p.flat-paragraph").text());
 		}
 		
 		problem.setTitle(title);
 		problem.setDescription(description);
 		problem.setInspectionSteps(inspectionSteps);
+		
+		//System.out.println(problem.getDescription());
 		
 		return problem;
 	}
@@ -206,7 +215,7 @@ public class AutomdDiagnoseClient {
 	
 	public List<AutomdProblem> buildProblemList(AutomdWebPage currWebPage) throws Exception{
 
-		System.out.println("buildProblemList!");
+		//System.out.println("buildProblemList!");
 		
 		List<String> queryUrlList = buildProblemIdQueryUrlList(currWebPage);
 		
@@ -214,6 +223,7 @@ public class AutomdDiagnoseClient {
 		List<AutomdProblem> problemList = new ArrayList<AutomdProblem>();
 		
 		for(String queryUrl : queryUrlList){
+			// init new thread to handle creation of: problem
 			problemList.add(buildProblem(queryUrl));
 		}
 		return problemList;
@@ -261,7 +271,7 @@ public class AutomdDiagnoseClient {
 			AutomdWebPage webPage = new AutomdWebPage();
 			List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
 		
-			System.out.println("title: " + h3.text());
+			//System.out.println("title: " + h3.text());
 
 			webPage.setTitle(h3.text());
 
@@ -297,7 +307,7 @@ public class AutomdDiagnoseClient {
 				}
 			}
 			
-			System.out.println("webPage.getChildWebPageList().size(): " + webPage.getChildWebPageList().size());
+			//System.out.println("webPage.getChildWebPageList().size(): " + webPage.getChildWebPageList().size());
 			webPage.setChildWebPageList(childWebPageList);
 			webPageList.add(webPage);
 		}

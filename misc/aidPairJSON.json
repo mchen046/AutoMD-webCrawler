@@ -1,118 +1,120 @@
 {
-	"webpages" : [ {
-
-		"title" : "If you're not sure what the problem is, start by describing the symptoms:",
-		"aidPairs" : [ {
-			"key" : "Feel",
-			"val" : "389",
-			"title" : "What do you feel?",
-			"aidPairs" : [ {
-				"key" : "Drifts",
-				"val" : "218",
-				"title" : "",
-				"aidPairs" : [
-				]
-			},
-			...
-			{
-				"key" : "Vibration"
-				"val" : "224"
-				"title" : "When do you feel the vibration?"
-				"aidPairs" : [
-					{
-						"key" : "When braking"
-						"val" : "225"
-						"title" : "Where do you feel the vibration when braking?"
-						"aidPairs" : [
-							{
-								"key" : "Through the steering wheel"
-								"val" : "228"
-								"title" : ""
-								"aidPairs" : [
-								]
-								"problem" : [
-									{
-										"title" : "Warped Brake Rotors" 
-										"diyCost" : "$253.12"
-										"shopCost" : "$397.49"
-										"detail" : " A warped brake rotor can be caused by excessive heat or improper wheel lug nut torque. If you feel a pulsation or..." 
-										"difficulty" : "Moderate"
-										"queryURL" : "https://www.automd.com/diagnose/inspection?problem_id=2"
-									}
-									{
-										"title" : 
-										"diyCost" : 
-										"shopCost" :
-										"detail" : 
-										"difficulty" : 
-										"queryURL" : 
-									}
-									{
-										"title" : 
-										"diyCost" : 
-										"shopCost" :
-										"detail" : 
-										"difficulty" : 
-										"queryURL" : 
-									}
-								]
-							}
-							{
-								"key" : "Through the seats"
-								"val" : "229"
-								"title" : ""
-								"aidPairs" : [
-								]
-							}
-							{
-								"key" : "Not Sure"
-								"val" : "230"
-								"title" : ""
-								"aidPairs" : [
-								]
-							}
-						]
-					}
-				]
+	"webpages" : [ 
+		{
+			"title" : "If you're not sure what the problem is, start by describing the symptoms:",
+			"aidPairs" : [ 
+				{
+					"key" : "Feel",
+					"val" : "389",
+					"title" : "What do you feel?",
+					"aidPairs" : [ 
+						{
+							"key" : "Drifts",
+							"val" : "218",
+							"title" : "",
+							"aidPairs" : [
+							]
+						},
+						...
+						{
+							"key" : "Vibration"
+							"val" : "224"
+							"title" : "When do you feel the vibration?"
+							"aidPairs" : [
+								{
+									"key" : "When braking"
+									"val" : "225"
+									"title" : "Where do you feel the vibration when braking?"
+									"aidPairs" : [
+										{
+											"key" : "Through the steering wheel"
+											"val" : "228"
+											"title" : ""
+											"aidPairs" : [
+											]
+											"problem" : [
+												{
+													"title" : "Warped Brake Rotors" 
+													"diyCost" : "$253.12"
+													"shopCost" : "$397.49"
+													"detail" : " A warped brake rotor can be caused by excessive heat or improper wheel lug nut torque. If you feel a pulsation or..." 
+													"difficulty" : "Moderate"
+													"queryURL" : "https://www.automd.com/diagnose/inspection?problem_id=2"
+												}
+												{
+													"title" : 
+													"diyCost" : 
+													"shopCost" :
+													"detail" : 
+													"difficulty" : 
+													"queryURL" : 
+												}
+												{
+													"title" : 
+													"diyCost" : 
+													"shopCost" :
+													"detail" : 
+													"difficulty" : 
+													"queryURL" : 
+												}
+											]
+										}
+										{
+											"key" : "Through the seats"
+											"val" : "229"
+											"title" : ""
+											"aidPairs" : [
+											]
+										}
+										{
+											"key" : "Not Sure"
+											"val" : "230"
+											"title" : ""
+											"aidPairs" : [
+											]
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+				{
+					"key" : "Hear"
+					"val" : "386"
+				}
+				{
+					"key" : "See"
+					"val" : "390"
+				}
+				{
+					"key" : "Smell"
+					"val" : "388"
+				}
+				{
+					"key" : "Ugh"
+					"val" : "387"
+				}
+			]
 			}
-		]
-	}
-	{
-		"key" : "Hear"
-		"val" : "386"
-	}
-	{
-		"key" : "See"
-		"val" : "390"
-	}
-	{
-		"key" : "Smell"
-		"val" : "388"
-	}
-	{
-		"key" : "Ugh"
-		"val" : "387"
-	}
-]
-}
-{
-"title" : "If you're not sure what the problem is, start by describing the symptoms:"
+			{
+			"title" : "If you're not sure what the problem is, start by describing the symptoms:"
 
-"Feel" : {
+			"Feel" : {
 
-}
-"Hear" : {
+			}
+			"Hear" : {
 
-}
-"See" : {
+			}
+			"See" : {
 
-}
-"Smell" : {
+			}
+			"Smell" : {
 
-}
-"Ugh" : {
+			}
+			"Ugh" : {
 
-}
-}
-]
-}
+			}
+			}
+			]
+			}

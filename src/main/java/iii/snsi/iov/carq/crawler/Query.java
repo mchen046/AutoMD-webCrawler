@@ -90,7 +90,7 @@ public class Query {
 		}
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
+		//System.out.println("\nSending 'GET' request to URL : " + url);
 		//System.out.println("Response Code : " + responseCode);
 		//System.out.println("response : " + getResponse(con));
 
@@ -119,7 +119,7 @@ public class Query {
 		wr.close();
 
 		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
+		//System.out.println("\nSending 'POST' request to URL : " + url);
 		//System.out.println("Post param : " + queryString);
 		//System.out.println("Response Code : " + responseCode);
 

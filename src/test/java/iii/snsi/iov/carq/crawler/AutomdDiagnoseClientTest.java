@@ -21,7 +21,6 @@ import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient;
 public class AutomdDiagnoseClientTest {
 
 	private final String baseUrl = "https://www.automd.com";
-	private static Integer dfsCount = 0;
 	
 	// custom 4 space indent JSON pretty printer: http://stackoverflow.com/a/28261746
 	private String prettyPrintJSON(AutomdWebPage webPage) throws JsonProcessingException{
@@ -60,16 +59,15 @@ public class AutomdDiagnoseClientTest {
 	 * 	great grand childWebPageList
 	 */
 	private List<AutomdWebPage> buildChildWebPageList(AutomdWebPage currWebPage, String queryUrl, String queryMethod, AutomdDiagnoseClient amdClient, BufferedWriter debug) throws Exception{
-		System.out.println(currWebPage.getAidPair().getKey() + " : " + currWebPage.getAidPair().getVal() + "\n");
+		//System.out.println(currWebPage.getAidPair().getKey() + " : " + currWebPage.getAidPair().getVal() + "\n");
 		// grab all section block webPages with a title header on the currWebPage
 		List<AutomdWebPage> icChildWebPageList = amdClient.buildWebPageList(currWebPage, queryUrl, queryMethod);
 		
 		List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
 		
-		System.out.println(String.format("icChildWebPageList.size() (children retreived from %s): %d", queryUrl, icChildWebPageList.size()));
+		//System.out.println(String.format("icChildWebPageList.size() (children retreived from %s): %d", queryUrl, icChildWebPageList.size()));
 		
 		if(icChildWebPageList.size() == 1 && icChildWebPageList.get(0).getChildWebPageList().size() == 0){ // base case
-			System.out.println(dfsCount++);
 			return childWebPageList;
 		}
 
@@ -78,6 +76,8 @@ public class AutomdDiagnoseClientTest {
 		 */
 		for(AutomdWebPage icChildWebPage : icChildWebPageList){ 
 			
+			// init new thread to handle creation of: childWebPage
+			
 			AutomdWebPage childWebPage = new AutomdWebPage();
 			childWebPage.setTitle(icChildWebPage.getTitle());
 			childWebPage.setAidPair(icChildWebPage.getAidPair());
@@ -85,6 +85,8 @@ public class AutomdDiagnoseClientTest {
 			List<AutomdWebPage> grandChildWebPageList = new ArrayList<AutomdWebPage>();
 			
 			for(AutomdWebPage icGrandChildWebPage : icChildWebPage.getChildWebPageList()){
+				
+				// init new thread to handle creation of: grandChildWebPage
 				
 				AutomdWebPage grandChildWebPage = new AutomdWebPage();
 				grandChildWebPage.setTitle(icGrandChildWebPage.getTitle());
