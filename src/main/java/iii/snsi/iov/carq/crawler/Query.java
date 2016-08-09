@@ -3,11 +3,9 @@ package iii.snsi.iov.carq.crawler;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -89,7 +87,7 @@ public class Query {
 			con.setRequestProperty("Cookie", cookie);
 		}
 
-		int responseCode = con.getResponseCode();
+		//int responseCode = con.getResponseCode();
 		//System.out.println("\nSending 'GET' request to URL : " + url);
 		//System.out.println("Response Code : " + responseCode);
 		//System.out.println("response : " + getResponse(con));
@@ -118,7 +116,7 @@ public class Query {
 		wr.flush();
 		wr.close();
 
-		int responseCode = con.getResponseCode();
+		//int responseCode = con.getResponseCode();
 		//System.out.println("\nSending 'POST' request to URL : " + url);
 		//System.out.println("Post param : " + queryString);
 		//System.out.println("Response Code : " + responseCode);

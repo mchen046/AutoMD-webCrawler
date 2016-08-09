@@ -18,6 +18,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /*import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;*/
 
@@ -58,7 +63,41 @@ public class AutomdDiagnoseClient {
 		}
 	}
 	
-	/* init Pairs (and the pairs in nextQnaQuery)
+	private HttpsURLConnection httpRequest(String queryUrl, String queryMethod, List<Pair<String, String>> queryParam) throws Exception {
+		System.out.println("queries: " + ++queryCount);
+		Query query = new Query();
+		
+		String url = queryUrl;
+		URL obj = new URL(url);
+		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+		
+		if(queryMethod == "GET"){
+			con = query.httpGet(queryUrl, queryParam);
+		}
+		else if(queryMethod == "POST"){
+			con = query.httpPost(queryUrl, queryParam);
+		}
+		// will return the diagnostic homepage if get or post is not specified
+		return con;
+	}
+	
+	// custom 4 space indent JSON pretty printer: http://stackoverflow.com/a/28261746
+	public String prettyPrintJSON(AutomdWebPage webPage) throws JsonProcessingException{
+		// Create the mapper
+		ObjectMapper mapper = new ObjectMapper();
+
+		// Setup a pretty printer with an indenter (indenter has 4 spaces in this case)
+		DefaultPrettyPrinter.Indenter indenter = 
+				new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
+		DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
+		printer.indentObjectsWith(indenter);
+		printer.indentArraysWith(indenter);
+
+		// Serialize it using the custom printer
+		return mapper.writer(printer).writeValueAsString(webPage);
+	}
+
+	/* init Pairs
 	 * qid: original Url also has qid in the query parameters, but leaving it out 
 	 *  does not seem to affect the http response. The reason why it is left out is
 	 *  because the qid value is only retrievable from the /diagnose/next_qna query
@@ -121,24 +160,6 @@ public class AutomdDiagnoseClient {
 		query.setCookie(httpRequest(queryUrl, queryMethod, buildQueryParam(emptyWebPage, queryUrl)));
 	}
 	
-	public HttpsURLConnection httpRequest(String queryUrl, String queryMethod, List<Pair<String, String>> queryParam) throws Exception {
-		System.out.println("queries: " + ++queryCount);
-		Query query = new Query();
-		
-		String url = queryUrl;
-		URL obj = new URL(url);
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-		
-		if(queryMethod == "GET"){
-			con = query.httpGet(queryUrl, queryParam);
-		}
-		else if(queryMethod == "POST"){
-			con = query.httpPost(queryUrl, queryParam);
-		}
-		// will return the diagnostic homepage if get or post is not specified
-		return con;
-	}
-	
 	private List<String> buildProblemIdQueryUrlList(AutomdWebPage currWebPage) throws Exception{
 		List<String> problemIdQueryUrlList = new ArrayList<String>();
 		
@@ -195,9 +216,10 @@ public class AutomdDiagnoseClient {
 		Elements stepElements = doc.select("div.inspection-guide").get(0).select("div.step.clearfix");
 		//System.out.println("stepElements.size(): " + stepElements.size());
 		for(Element stepElement : stepElements){
-			inspectionSteps.add(stepElement.select("div.content").get(0).select("p.flat-paragraph").text());
+			String stepNumber = stepElement.select("div.number").text();
+			String stepContent = stepElement.select("div.content").get(0).select("p.flat-paragraph").text();
+			inspectionSteps.add(stepNumber + ") " + stepContent);
 			System.out.println("inspectionSteps: " + ++inspectionStepCount);
-			//System.out.println(stepElement.select("div.content").get(0).select("p.flat-paragraph").text());
 		}
 		
 		problem.setTitle(title);
@@ -212,7 +234,6 @@ public class AutomdDiagnoseClient {
 	/* end of step 2 -> step 3 -> step 4 -> extract info
 	 * buildProblemIdUrlList -> 
 	 */
-	
 	public List<AutomdProblem> buildProblemList(AutomdWebPage currWebPage) throws Exception{
 
 		//System.out.println("buildProblemList!");
@@ -222,10 +243,16 @@ public class AutomdDiagnoseClient {
 		// query each problem_id url
 		List<AutomdProblem> problemList = new ArrayList<AutomdProblem>();
 		
-		for(String queryUrl : queryUrlList){
-			// init new thread to handle creation of: problem
-			problemList.add(buildProblem(queryUrl));
-		}
+
+		// multi-thread: order in which problems are added does not matter
+		queryUrlList.parallelStream().forEach(queryUrl -> {
+			try {
+				problemList.add(buildProblem(queryUrl));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		
 		return problemList;
 	}
 	
@@ -262,8 +289,6 @@ public class AutomdDiagnoseClient {
 		Document doc = Jsoup.parse(response);
 		
 		Elements h3Elements = doc.select("h3.diagnose-header.flat-text-bold16.mb20");
-		//System.out.println("h3Elements.size(): " + h3Elements.size());
-		
 		
 		List<AutomdWebPage> webPageList = new ArrayList<AutomdWebPage>();
 		for(Element h3 : h3Elements){ // for each webPage that exists on the response
@@ -271,8 +296,6 @@ public class AutomdDiagnoseClient {
 			AutomdWebPage webPage = new AutomdWebPage();
 			List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
 		
-			//System.out.println("title: " + h3.text());
-
 			webPage.setTitle(h3.text());
 
 			if(queryParam.size() != 0 && queryParam.get(0).getKey() != "" &&  queryParam.get(0).getVal() != ""){
@@ -315,10 +338,96 @@ public class AutomdDiagnoseClient {
 		return webPageList;
 	}
 	
+	/* first query on step 2
+	 * /diagnose/select_area : POST
+	 * no cookie
+	 *
+	 * second query on step 2
+	 * /diagnose/qna : GET 
+	 * cookie
+	 * 
+	 * subsequent nested queries
+	 * /diagnose/next_qna : GET
+	 * cookie
+	 */
+	
+	/* icChildWebPageList:
+	 * 	incomplete childWebPageList
+	 *  contains only the parent AutomdWebPage fields, need to further populate the nested
+	 *  values -> childWebPageList
+	 * gGrandChildWebPageList:
+	 * 	great grand childWebPageList
+	 */
+	public List<AutomdWebPage> buildChildWebPageList(AutomdWebPage currWebPage, String queryUrl, String queryMethod, AutomdDiagnoseClient amdClient) throws Exception{
+		//System.out.println(currWebPage.getAidPair().getKey() + " : " + currWebPage.getAidPair().getVal() + "\n");
+		// grab all section block webPages with a title header on the currWebPage
+		List<AutomdWebPage> icChildWebPageList = amdClient.buildWebPageList(currWebPage, queryUrl, queryMethod);
+		
+		List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
+		
+		//System.out.println(String.format("icChildWebPageList.size() (children retrieved from %s): %d", queryUrl, icChildWebPageList.size()));
+		
+		if(icChildWebPageList.size() == 1 && icChildWebPageList.get(0).getChildWebPageList().size() == 0){ // base case
+			return childWebPageList;
+		}
+
+		/* For each webPage section with a header. there is only more than 1 section on the first page.
+		 * There are two sections on the first page.
+		 * It is written as O(n^2), but runtime is actually more closely resembled by O(n)
+		 *
+		 * multithreaded implementation
+		 * order in which childWebPage(s) and grandChildWebPage(s) are added does not matter
+		 */
+		icChildWebPageList.parallelStream().forEach(icChildWebPage -> {
+			try {
+				
+				AutomdWebPage childWebPage = new AutomdWebPage();
+				childWebPage.setTitle(icChildWebPage.getTitle());
+				childWebPage.setAidPair(icChildWebPage.getAidPair());
+				
+				List<AutomdWebPage> grandChildWebPageList = new ArrayList<AutomdWebPage>();
+				
+				icChildWebPage.getChildWebPageList().parallelStream().forEach(icGrandChildWebPage -> {
+					try{
+
+						AutomdWebPage grandChildWebPage = new AutomdWebPage();
+						grandChildWebPage.setTitle(icGrandChildWebPage.getTitle());
+						grandChildWebPage.setAidPair(icGrandChildWebPage.getAidPair());
+						
+						// need to optimize this, currently does two queries each time (at most)
+						List<AutomdWebPage> gGrandChildWebPageListQna = buildChildWebPageList(grandChildWebPage, baseUrl + "/diagnose/qna", "GET", amdClient);
+
+						grandChildWebPage.setChildWebPageList( gGrandChildWebPageListQna.size() != 0 ? gGrandChildWebPageListQna : buildChildWebPageList(grandChildWebPage, baseUrl + "/diagnose/next_qna", "GET", amdClient));
+						
+						/* (step 3 -> step 4)
+						 * insert problem webPage / problem object into childWebPageList (should be the only object in the list)
+						 */
+						if(grandChildWebPage.getChildWebPageList().size() == 0){
+							grandChildWebPage.setProblemList(amdClient.buildProblemList(grandChildWebPage));
+						}
+						
+						grandChildWebPageList.add(grandChildWebPage);
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				});
+
+				childWebPage.setChildWebPageList(grandChildWebPageList);
+				
+				childWebPageList.add(childWebPage);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+		
+		return childWebPageList;
+	}
+	
 	public HtmlPage getPage(String url) throws FailingHttpStatusCodeException, MalformedURLException, IOException {
 		HtmlPage page = client.getPage(url);
 		return page;
-
 	}
 
 }
