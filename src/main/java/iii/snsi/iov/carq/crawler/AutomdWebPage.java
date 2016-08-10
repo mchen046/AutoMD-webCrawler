@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient;
 import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.Pair;
-import iii.snsi.iov.carq.crawler.AutomdProblem;
 
 /* An object of the AutomdWebPage class is defined as a webPage, 
  * where a webPage is defined as a a section block that has

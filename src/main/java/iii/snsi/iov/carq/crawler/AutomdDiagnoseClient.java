@@ -22,10 +22,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-/*import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;*/
-
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -257,7 +253,6 @@ public class AutomdDiagnoseClient {
 	}
 	
 	public List<AutomdWebPage> buildWebPageList(AutomdWebPage currWebPage, String queryUrl, String queryMethod) throws Exception {
-		//System.out.println("in getWebPageList!");
 		
 		List<Pair<String, String>> queryParam = buildQueryParam(currWebPage, queryUrl);
 		String response = getResponse(queryUrl, queryMethod, queryParam);
@@ -272,10 +267,11 @@ public class AutomdDiagnoseClient {
 			response = (String) data.get("qna_content");
 		}
 		
-		//System.out.println(response);
-
-		/* parse html document to extract key : val 
+		/* Parse html document response to extract key : val 
 		 * 
+		 * It is written as O(n^3), but runtime is actually more closely resembled by O(n),
+		 * where n is the number of labels (key : val aid pairs found)
+		 *
 		 * <h3 class="diagnose-header flat-text-bold16 mb20" ... ></h3>
 		 * <div .. > 
 		 * 	<label> 
@@ -334,7 +330,6 @@ public class AutomdDiagnoseClient {
 			webPage.setChildWebPageList(childWebPageList);
 			webPageList.add(webPage);
 		}
-		//System.out.println("finished getWebPageList!");
 		return webPageList;
 	}
 	
@@ -349,9 +344,8 @@ public class AutomdDiagnoseClient {
 	 * subsequent nested queries
 	 * /diagnose/next_qna : GET
 	 * cookie
-	 */
-	
-	/* icChildWebPageList:
+	 *	
+	* icChildWebPageList:
 	 * 	incomplete childWebPageList
 	 *  contains only the parent AutomdWebPage fields, need to further populate the nested
 	 *  values -> childWebPageList
@@ -371,12 +365,12 @@ public class AutomdDiagnoseClient {
 			return childWebPageList;
 		}
 
-		/* For each webPage section with a header. there is only more than 1 section on the first page.
+		/* For each webPage section with a header. There is only more than 1 section on the first page.
 		 * There are two sections on the first page.
 		 * It is written as O(n^2), but runtime is actually more closely resembled by O(n)
 		 *
-		 * multithreaded implementation
-		 * order in which childWebPage(s) and grandChildWebPage(s) are added does not matter
+		 * Multithreaded implementation
+		 * Order in which childWebPage(s) and grandChildWebPage(s) are added does not matter
 		 */
 		icChildWebPageList.parallelStream().forEach(icChildWebPage -> {
 			try {
