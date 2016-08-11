@@ -4,18 +4,24 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.net.HttpURLConnection;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.Pair;
+import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.MicrosoftTranslatorToken;
 
 // https://www.mkyong.com/java/how-to-send-http-request-getpost-in-java/
 public class Query {
 
 	private final String USER_AGENT = "Mozilla/5.0";
 	private static String cookie = "";
+	private static String access_token = "";
 	
 	private String buildQueryString(List<Pair<String, String>> queryParam){
 		String queryString = "";
@@ -31,96 +37,132 @@ public class Query {
 		return queryString;
 	}
 
-	public void setCookie(HttpsURLConnection con) throws Exception{
-		List<String> cookies = con.getHeaderFields().get("Set-Cookie");
-		String cookieDiagnose = "", cookieSavedVehicles = "";
-		for(	String cookieSection : cookies){
-			/*System.out.println(cookieSection.substring(0, 9));
-			System.out.println(cookieSection.substring(0, 17));*/
+    public void renewAccessToken(HttpURLConnection con) throws Exception {
 
-			if(cookieSection.substring(0, 9).equals("diagnose=")){
-				cookieDiagnose = cookieSection;
-				System.out.println(cookieSection);
-			}
-			else if(cookieSection.substring(0, 17).equals("AMDSavedVehicles=")){
-				cookieSavedVehicles = cookieSection;
-				System.out.println(cookieSection);
-			}
-		}
-		cookie = cookieDiagnose + ", " + cookieSavedVehicles;
-		System.out.println("setCookie: " + cookie);
-	}
-	
-	public String getResponse(HttpsURLConnection con) throws Exception{
-		BufferedReader in = new BufferedReader(
-		        new InputStreamReader(con.getInputStream()));
-		String inputLine;
-		StringBuffer response = new StringBuffer();
+        if(con instanceof HttpsURLConnection){
+            System.out.println("casting to HttpsURLConnection!");
+            con = (HttpsURLConnection)con;
+            //httpsCon.setHostnameVerifier();
+        }
 
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
-		
-		return response.toString();
-	}
-	
-	// HTTP GET request
-	public HttpsURLConnection httpGet(String queryUrl, List<Pair<String, String>> queryParam) throws Exception {
+        String response = getResponse(con);
 
-		String queryString = buildQueryString(queryParam);
-		
-		String url = queryUrl;
-		if(queryString.length() != 0){
-			// question mark separates base url from query parameters
-			url += "?" + queryString;
-		}
-		
-		URL obj = new URL(url);
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-		con.setRequestMethod("GET");
-		con.setRequestProperty("User-Agent", USER_AGENT);
-		
-		if(cookie != ""){ 
-			//System.out.println("Setting cookie: " + cookie);
-			con.setRequestProperty("Cookie", cookie);
-		}
+        MicrosoftTranslatorToken token = objectMapper.readValue(response, MicrosoftTranslatorToken.class);
 
-		//int responseCode = con.getResponseCode();
-		//System.out.println("\nSending 'GET' request to URL : " + url);
-		//System.out.println("Response Code : " + responseCode);
-		//System.out.println("response : " + getResponse(con));
+        access_token = token.access_token;
 
-		return con;
-	}
+        System.out.println("access_token: " + access_token);
+    }
 
-	// HTTP POST request
-	public HttpsURLConnection httpPost(String queryUrl, List<Pair<String, String>> queryParam) throws Exception {
+    public void setCookie(HttpURLConnection con) throws Exception{
 
-		String queryString = buildQueryString(queryParam);
+        if(con instanceof HttpsURLConnection){
+            System.out.println("casting to HttpsURLConnection!");
+            con = (HttpsURLConnection)con;
+            //httpsCon.setHostnameVerifier();
+        }
 
-		String url = queryUrl;
-		URL obj = new URL(url);
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+        List<String> cookies = con.getHeaderFields().get("Set-Cookie");
+        String cookieDiagnose = "", cookieSavedVehicles = "";
+        for(String cookieSection : cookies){
+        /*System.out.println(cookieSection.substring(0, 9));
+        System.out.println(cookieSection.substring(0, 17));*/
 
-		//add request header
-		con.setRequestMethod("POST");
-		con.setRequestProperty("User-Agent", USER_AGENT);
-		con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+            if(cookieSection.substring(0, 9).equals("diagnose=")){
+                cookieDiagnose = cookieSection;
+                System.out.println(cookieSection);
+            }
+            else if(cookieSection.substring(0, 17).equals("AMDSavedVehicles=")){
+                cookieSavedVehicles = cookieSection;
+                System.out.println(cookieSection);
+            }
+        }
+        cookie = cookieDiagnose + ", " + cookieSavedVehicles;
+        System.out.println("setCookie: " + cookie);
+    }
 
-		// send post request
-		con.setDoOutput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(queryString);
-		wr.flush();
-		wr.close();
+    public String getResponse(HttpURLConnection con) throws Exception{
 
-		//int responseCode = con.getResponseCode();
-		//System.out.println("\nSending 'POST' request to URL : " + url);
-		//System.out.println("Post param : " + queryString);
-		//System.out.println("Response Code : " + responseCode);
+        if(con instanceof HttpsURLConnection){
+            System.out.println("casting to HttpsURLConnection!");
+            con = (HttpsURLConnection)con;
+            //httpsCon.setHostnameVerifier();
+        }
 
-		return con;
-	}
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+
+        return response.toString();
+    }
+
+    // HTTP GET request
+    public HttpURLConnection httpGet(String queryUrl, List<Pair<String, String>> queryParam) throws Exception {
+
+        String queryString = buildQueryString(queryParam);
+
+        String url = queryUrl;
+        if(queryString.length() != 0){
+            // question mark separates base url from query parameters
+            url += "?" + queryString;
+        }
+
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnection)obj.openConnection();
+
+        con.setRequestMethod("GET");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+
+        if(queryUrl.equals(QueryUrl.TRANSLATEURL.url())){ // add access_token request header
+            con.setRequestProperty("Authorization", "Bearer" + " " + access_token);
+        }
+
+        if(cookie != ""){ // set cookie
+            con.setRequestProperty("Cookie", cookie);
+        }
+
+        //int responseCode = con.getResponseCode();
+        //System.out.println("\nSending 'GET' request to URL : " + url);
+        //System.out.println("Response Code : " + responseCode);
+        //System.out.println("response : " + getResponse(con));
+
+        return con;
+    }
+
+    // HTTP POST request
+    public HttpURLConnection httpPost(String queryUrl, List<Pair<String, String>> queryParam) throws Exception {
+
+        String queryString = buildQueryString(queryParam);
+
+        String url = queryUrl;
+        URL obj = new URL(url);
+        HttpURLConnection con = (HttpURLConnectionn) obj.openConnection();
+
+        //add request header
+        con.setRequestMethod("POST");
+        con.setRequestProperty("User-Agent", USER_AGENT);
+        con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+        // send post request
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.writeBytes(queryString);
+        wr.flush();
+        wr.close();
+
+        //int responseCode = con.getResponseCode();
+        //System.out.println("\nSending 'POST' request to URL : " + url);
+        //System.out.println("Post param : " + queryString);
+        //System.out.println("Response Code : " + responseCode);
+
+        return con;
+    }
 }

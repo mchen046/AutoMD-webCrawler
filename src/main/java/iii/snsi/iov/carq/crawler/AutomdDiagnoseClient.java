@@ -3,6 +3,7 @@ package iii.snsi.iov.carq.crawler;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.net.HttpURLConnection;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,7 +29,9 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 public class AutomdDiagnoseClient {
-	private final String baseUrl = "https://www.automd.com";
+	//private final String baseUrl = "https://www.automd.com";
+	//private final String translationUrl = "http://api.microsofttranslator.com/v2/Http.svc/Translate";
+
 	private WebClient client = null;
 
 	private static Integer queryCount = 0;
@@ -48,7 +52,24 @@ public class AutomdDiagnoseClient {
 		  public K getKey() { return key; }
 		  public V getVal() { return val; }
 	}
-	
+
+	public static class MicrosoftTranslatorToken {
+		public String token_type;
+		public String access_token;
+		public String expires_in;
+		public String scope;
+
+		public MicrosoftTranslatorToken(){
+		}
+
+		public MicrosoftTranslatorToken(String token_type, String access_token, String expires_in, String scope) {
+			this.token_type = token_type;
+			this.access_token = access_token;
+			this.expires_in = expires_in;
+			this.scope = scope;
+		}
+	}
+
 	public void init(boolean enableJs) throws FailingHttpStatusCodeException, MalformedURLException, IOException {
 		client = HtmlUnitCrawler.getWebClient(enableJs);
 	}
@@ -58,15 +79,15 @@ public class AutomdDiagnoseClient {
 			client.close();
 		}
 	}
-	
-	private HttpsURLConnection httpRequest(String queryUrl, String queryMethod, List<Pair<String, String>> queryParam) throws Exception {
+
+	private HttpURLConnection httpRequest(String queryUrl, String queryMethod, List<Pair<String, String>> queryParam) throws Exception {
 		System.out.println("queries: " + ++queryCount);
 		Query query = new Query();
-		
+
 		String url = queryUrl;
 		URL obj = new URL(url);
-		HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
-		
+		HttpURLConnection con = (HttpURLConnection)obj.openConnection();
+
 		if(queryMethod == "GET"){
 			con = query.httpGet(queryUrl, queryParam);
 		}
@@ -83,8 +104,7 @@ public class AutomdDiagnoseClient {
 		ObjectMapper mapper = new ObjectMapper();
 
 		// Setup a pretty printer with an indenter (indenter has 4 spaces in this case)
-		DefaultPrettyPrinter.Indenter indenter = 
-				new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
+		DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
 		DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
 		printer.indentObjectsWith(indenter);
 		printer.indentArraysWith(indenter);
@@ -94,7 +114,7 @@ public class AutomdDiagnoseClient {
 	}
 
 	/* init Pairs
-	 * qid: original Url also has qid in the query parameters, but leaving it out 
+	 * qid: original Url also has qid in the query parameters, but leaving it out
 	 *  does not seem to affect the http response. The reason why it is left out is
 	 *  because the qid value is only retrievable from the /diagnose/next_qna query
 	 *  which originally requires the qid as a query parameter.
@@ -105,7 +125,7 @@ public class AutomdDiagnoseClient {
 	private List<Pair<String, String>> buildQueryParam(AutomdWebPage webPage, String queryUrl){
 		List<Pair<String, String>> queryParam = new ArrayList<Pair<String, String>>();
 
-		if (queryUrl.equals(baseUrl + "/diagnose/select_area")){
+		if (queryUrl.equals(QueryUrl.BASEURL.url() + "/diagnose/select_area")){
 			// build vehicle queryParam
 			
 			// 2016 Toyota Avalon Hybrid Limited 4 Cyl 2.5L
@@ -121,24 +141,44 @@ public class AutomdDiagnoseClient {
 			queryParam.add(submodel);
 			queryParam.add(engine);
 		}
-		else if (queryUrl.equals(baseUrl + "/diagnose/qna")){
+		else if (queryUrl.equals(QueryUrl.BASEURL.url() + "/diagnose/qna")){
 			Pair<String, String> aid = new Pair<String, String>("aid", webPage.getAidPair().getVal());
 			Pair<String, String> option = new Pair<String, String>("option", "1");
 
 			queryParam.add(aid);
 			queryParam.add(option);
 		}
-		else if (queryUrl.equals(baseUrl + "/diagnose/next_qna")){
+		else if (queryUrl.equals(QueryUrl.BASEURL.url() + "/diagnose/next_qna")){
 			Pair<String, String> aid = new Pair<String, String>("aid", webPage.getAidPair().getVal());
 			Pair<String, String> ajax = new Pair<String, String>("ajax", "1");
 
 			queryParam.add(aid);
 			queryParam.add(ajax);
 		}
-		else if (queryUrl.equals(baseUrl + "/diagnose/problems")){
+		else if (queryUrl.equals(QueryUrl.BASEURL.url() + "/diagnose/problems")){
 			Pair<String, String> aid = new Pair<String, String>("aid", webPage.getAidPair().getVal());
 			
 			queryParam.add(aid);
+		}
+		else if (queryUrl.equals(QueryUrl.TRANSLATEURL.url())){ // microsoft translator api
+			Pair<String, String> text = new Pair<String, String>("text", webPage.getTitle()); // input text
+			Pair<String, String> from = new Pair<String, String>("from", "en"); // english
+			Pair<String, String> to = new Pair<String, String>("to", "zh-Hant"); // chinese (traditional)
+
+			queryParam.add(text);
+			queryParam.add(from);
+            queryParam.add(to);
+		}
+		else if (queryUrl.equals(QueryUrl.ACCESSTOKENURL.url())){ // microsoft access token post
+			Pair<String, String> grant_type = new Pair<String, String>("grant_type", "client_credentials");
+			Pair<String, String> client_id = new Pair<String, String>("client_id", "AutoMD-webCrawler");
+            Pair<String, String> client_secret = new Pair<String, String>("client_secret", "JBKJ32B4J23B4N23B4VXLVXL342HJ34");
+            Pair<String, String> scope = new Pair<String, String>("scope", "http://api.microsofttranslator.com");
+
+			queryParam.add(grant_type);
+			queryParam.add(client_id);
+			queryParam.add(client_secret);
+			queryParam.add(scope);
 		}
 		
 		return queryParam;
@@ -148,6 +188,46 @@ public class AutomdDiagnoseClient {
 	public String getResponse(String queryUrl, String queryMethod, List<Pair<String, String>> queryParam) throws Exception {
 		Query query = new Query();
 		return query.getResponse((httpRequest(queryUrl, queryMethod, queryParam)));
+	}
+
+	/*public String translate(List<String> sourceTexts) throws Exception{
+
+		String from = "en";
+		String ContentType = "text/plain";
+		String to = "zh-CHT";
+
+		String requestBodyPrefix =
+                    "<TranslateArrayRequest>" +
+                        "<AppId />" +
+                        "<From>" + from + "</From>" +
+                        "<Options>" +
+                            " <Category xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2\" />" +
+                            "<ContentType xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2\">" + ContentType + "</ContentType>" +
+                            "<ReservedFlags xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2\" />" +
+                            "<State xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2\" />" +
+                            "<Uri xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2\" />" +
+                            "<User xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2\" />" +
+                        "</Options>" +
+                        "<Texts>";
+
+		// build sourceTexts xml portion
+		String sourceTextsXml = "";
+		for(String sourceText : sourceTexts) {
+			sourceTextsXml += "<string xmlns=\"http://schemas.microsoft.com/2003/10/Serialization/Arrays\">" + sourceText + "</string>";
+		}
+
+		String requestBodySuffix =
+						"</Texts>" +
+                        "<To>" + to + "</To>" +
+                    "</TranslateArrayRequest>";
+
+		String requestBody = requestBodyPrefix + sourceTextsXml + requestBodySuffix;
+	}*/
+
+	public void renewAccessToken() throws Exception {
+		Query query = new Query();
+		AutomdWebPage emptyWebPage = new AutomdWebPage();
+		query.renewAccessToken(httpRequest(QueryUrl.ACCESSTOKENURL.url(), "POST", buildQueryParam(emptyWebPage, QueryUrl.ACCESSTOKENURL.url())));
 	}
 	
 	public void setCookie(String queryUrl, String queryMethod) throws Exception {
@@ -160,7 +240,7 @@ public class AutomdDiagnoseClient {
 		List<String> problemIdQueryUrlList = new ArrayList<String>();
 		
 		// step 3
-		String queryUrl = baseUrl + "/diagnose/problems";
+		String queryUrl = QueryUrl.BASEURL.url() + "/diagnose/problems";
 		List<Pair<String, String>> queryParam = buildQueryParam(currWebPage, queryUrl);
 		String response = getResponse(queryUrl, "GET", queryParam);
 		
@@ -184,7 +264,7 @@ public class AutomdDiagnoseClient {
 			Pattern pattern = Pattern.compile("/diagnose/inspection\\?problem_id=\\d+");
 			Matcher matcher = pattern.matcher(buttonElement.attr("onclick"));
 			if (matcher.find()){
-				problemIdQueryUrlList.add(baseUrl + matcher.group(0));
+				problemIdQueryUrlList.add(QueryUrl.BASEURL.url() + matcher.group(0));
 			}
 		}
 		
@@ -203,8 +283,8 @@ public class AutomdDiagnoseClient {
 		Document doc = Jsoup.parse(response);
 		
 		String title = doc.select("h2.flat-heading-h1.mb20").text();
-		String description = doc.select("div.col-sm-12.col-md-8.content-main-left.clearfix").get(0).select("p.flat-paragraph").text();
-		
+		String description = doc.select("div.col-sm-12.col-md-8.content-main-left.clearfix").get(0).select("p.flat-paragraph").get(0).text();
+
 		// create list of inspection steps
 		List<String> inspectionSteps = new ArrayList<String>();
 		
@@ -217,7 +297,11 @@ public class AutomdDiagnoseClient {
 			inspectionSteps.add(stepNumber + ") " + stepContent);
 			System.out.println("inspectionSteps: " + ++inspectionStepCount);
 		}
-		
+
+		/*System.out.println("title: " + title);
+		System.out.println("description: " + description);
+		System.out.println("inspectionSteps: " + inspectionSteps);*/
+
 		problem.setTitle(title);
 		problem.setDescription(description);
 		problem.setInspectionSteps(inspectionSteps);
@@ -310,13 +394,13 @@ public class AutomdDiagnoseClient {
 					String key = label.select("span.label-text.flat-paragraph").first().text();
 					String val = label.select("input").first().attr("value");
 					
-					// key - remove misc symptom description (after the -)
-					if(key.indexOf(" -") != -1){
+					// key - remove misc symptom detail (after the -)
+					/*if(key.indexOf(" -") != -1){
 						key = key.substring(0, key.indexOf(" -"));
 					}
 					else if(key.indexOf("- ") != -1){
 						key = key.substring(0, key.indexOf("- "));
-					}
+					}*/
 					
 					//System.out.println("childWebPage.aidPair added!: " + key + " : " + val);
 					
@@ -389,9 +473,9 @@ public class AutomdDiagnoseClient {
 						grandChildWebPage.setAidPair(icGrandChildWebPage.getAidPair());
 						
 						// need to optimize this, currently does two queries each time (at most)
-						List<AutomdWebPage> gGrandChildWebPageListQna = buildChildWebPageList(grandChildWebPage, baseUrl + "/diagnose/qna", "GET", amdClient);
+						List<AutomdWebPage> gGrandChildWebPageListQna = buildChildWebPageList(grandChildWebPage, QueryUrl.BASEURL.url() + "/diagnose/qna", "GET", amdClient);
 
-						grandChildWebPage.setChildWebPageList( gGrandChildWebPageListQna.size() != 0 ? gGrandChildWebPageListQna : buildChildWebPageList(grandChildWebPage, baseUrl + "/diagnose/next_qna", "GET", amdClient));
+						grandChildWebPage.setChildWebPageList( gGrandChildWebPageListQna.size() != 0 ? gGrandChildWebPageListQna : buildChildWebPageList(grandChildWebPage, QueryUrl.BASEURL.url() + "/diagnose/next_qna", "GET", amdClient));
 						
 						/* (step 3 -> step 4)
 						 * insert problem webPage / problem object into childWebPageList (should be the only object in the list)
