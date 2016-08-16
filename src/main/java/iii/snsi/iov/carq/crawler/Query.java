@@ -5,16 +5,17 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.net.HttpURLConnection;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.Pair;
-import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.MicrosoftTranslatorToken;
+//import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.MicrosoftTranslatorToken;
 
 // https://www.mkyong.com/java/how-to-send-http-request-getpost-in-java/
 public class Query {
@@ -22,61 +23,43 @@ public class Query {
 	private final String USER_AGENT = "Mozilla/5.0";
 	private static String cookie = "";
 	private static String access_token = "";
-	
-	private String buildQueryString(List<Pair<String, String>> queryParam){
+
+	private String buildQueryString(Map<String, String> queryParam){
 		String queryString = "";
-		
-		for(Iterator<Pair<String, String>> it = queryParam.iterator(); it.hasNext();){
-			Pair<String, String> pair = it.next();
-			queryString += pair.getKey() + "=" + pair.getVal();
-			if(it.hasNext()){ // not the last element
-				queryString += "&";
-			}
-		}
-		
-		return queryString;
-	}
 
-    public void renewAccessToken(HttpURLConnection con) throws Exception {
+        for (Map.Entry<String, String> queryParamEntry : queryParam.entrySet()) {
+            String key = queryParamEntry.getKey();
+            String val = queryParamEntry.getValue();
 
-        if(con instanceof HttpsURLConnection){
-            System.out.println("casting to HttpsURLConnection!");
-            con = (HttpsURLConnection)con;
-            //httpsCon.setHostnameVerifier();
+            queryString += key + '=' + val + '&';
         }
 
-        String response = getResponse(con);
+        // remove last '&'
+        if(queryString != "" && queryString.charAt(queryString.length() - 1) == '&'){
+            queryString = queryString.substring(0, queryString.length() - 1);
+        }
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        MicrosoftTranslatorToken token = objectMapper.readValue(response, MicrosoftTranslatorToken.class);
-
-        access_token = token.access_token;
-
-        System.out.println("access_token: " + access_token);
-    }
+		return queryString;
+	}
 
     public void setCookie(HttpURLConnection con) throws Exception{
 
         if(con instanceof HttpsURLConnection){
-            System.out.println("casting to HttpsURLConnection!");
+            //System.out.println("casting to HttpsURLConnection!");
             con = (HttpsURLConnection)con;
-            //httpsCon.setHostnameVerifier();
         }
 
         List<String> cookies = con.getHeaderFields().get("Set-Cookie");
         String cookieDiagnose = "", cookieSavedVehicles = "";
         for(String cookieSection : cookies){
-        /*System.out.println(cookieSection.substring(0, 9));
-        System.out.println(cookieSection.substring(0, 17));*/
 
             if(cookieSection.substring(0, 9).equals("diagnose=")){
                 cookieDiagnose = cookieSection;
-                System.out.println(cookieSection);
+                //System.out.println(cookieSection);
             }
             else if(cookieSection.substring(0, 17).equals("AMDSavedVehicles=")){
                 cookieSavedVehicles = cookieSection;
-                System.out.println(cookieSection);
+                //System.out.println(cookieSection);
             }
         }
         cookie = cookieDiagnose + ", " + cookieSavedVehicles;
@@ -86,9 +69,7 @@ public class Query {
     public String getResponse(HttpURLConnection con) throws Exception{
 
         if(con instanceof HttpsURLConnection){
-            System.out.println("casting to HttpsURLConnection!");
             con = (HttpsURLConnection)con;
-            //httpsCon.setHostnameVerifier();
         }
 
         BufferedReader in = new BufferedReader(
@@ -105,7 +86,9 @@ public class Query {
     }
 
     // HTTP GET request
-    public HttpURLConnection httpGet(String queryUrl, List<Pair<String, String>> queryParam) throws Exception {
+    public HttpURLConnection httpGet(String queryUrl, Map<String, String> queryParam) throws Exception {
+
+        //System.out.println("queryUrl: " + queryUrl);
 
         String queryString = buildQueryString(queryParam);
 
@@ -121,10 +104,6 @@ public class Query {
         con.setRequestMethod("GET");
         con.setRequestProperty("User-Agent", USER_AGENT);
 
-        if(queryUrl.equals(QueryUrl.TRANSLATEURL.url())){ // add access_token request header
-            con.setRequestProperty("Authorization", "Bearer" + " " + access_token);
-        }
-
         if(cookie != ""){ // set cookie
             con.setRequestProperty("Cookie", cookie);
         }
@@ -138,18 +117,25 @@ public class Query {
     }
 
     // HTTP POST request
-    public HttpURLConnection httpPost(String queryUrl, List<Pair<String, String>> queryParam) throws Exception {
+    public HttpURLConnection httpPost(String queryUrl, Map<String, String> queryParam) throws Exception {
 
-        String queryString = buildQueryString(queryParam);
+        String queryString;
+
+        queryString = buildQueryString(queryParam);
 
         String url = queryUrl;
         URL obj = new URL(url);
-        HttpURLConnection con = (HttpURLConnectionn) obj.openConnection();
+        HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
         //add request header
         con.setRequestMethod("POST");
         con.setRequestProperty("User-Agent", USER_AGENT);
         con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
+
+        /*if(queryUrl.equals(QueryUrl.TRANSLATEARRAYURL.url())){ // add access_token request header
+            con.setRequestProperty("Authorization", "Bearer" + " " + access_token);
+            con.setRequestProperty("Content-Type", "text/xml");
+        }*/
 
         // send post request
         con.setDoOutput(true);

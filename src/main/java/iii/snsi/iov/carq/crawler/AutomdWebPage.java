@@ -1,12 +1,12 @@
 package iii.snsi.iov.carq.crawler;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.Pair;
-
-/* An object of the AutomdWebPage class is defined as a webPage, 
+/* An object of the AutomdWebPage class is defined as a webPage,
  * where a webPage is defined as a a section block that has
  * 	an aidPair (if exists from the previous page query)
  *  a title
@@ -18,12 +18,29 @@ import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.Pair;
  * /diagnose/select_area do not have a single associated aidPair.
  */
 
+
 public class AutomdWebPage {
-	private final static AutomdDiagnoseClient amdClient = new AutomdDiagnoseClient();
 	private String title = "";
-	private Pair<String, String> aidPair = amdClient.new Pair<String, String>("", "");
+	private Pair<String, String> aidPair = new Pair<String, String>("", "");
 	private List<AutomdWebPage> childWebPageList = Collections.<AutomdWebPage> emptyList();
 	private List<AutomdProblem> problemList = new ArrayList<AutomdProblem>();
+
+	public AutomdWebPage() {
+	}
+
+
+	public AutomdWebPage(String title, Pair<String, String> aidPair, List<AutomdWebPage> childWebPageList) {
+		this.title = title;
+		this.aidPair = aidPair;
+		this.childWebPageList = childWebPageList;
+	}
+
+	public AutomdWebPage(String title, Pair<String, String> aidPair, List<AutomdWebPage> childWebPageList, List<AutomdProblem> problemList) {
+		this.title = title;
+		this.aidPair = aidPair;
+		this.childWebPageList = childWebPageList;
+		this.problemList = problemList;
+	}
 
 	public String getTitle() {
 		return title;

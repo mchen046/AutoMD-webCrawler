@@ -1,6 +1,9 @@
-iii/snsi/iov/carq/crawler/AutomdDiagnoseClient$MicrosoftTranslatorToken.class
 iii/snsi/iov/carq/crawler/AutomdWebPage.class
+iii/snsi/iov/carq/crawler/LanguageCode.class
 iii/snsi/iov/carq/crawler/AutomdDiagnoseClient.class
-iii/snsi/iov/carq/crawler/AutomdDiagnoseClient$Pair.class
+iii/snsi/iov/carq/crawler/ProblemListEntry.class
 iii/snsi/iov/carq/crawler/AutomdProblem.class
 iii/snsi/iov/carq/crawler/HtmlUnitCrawler.class
+iii/snsi/iov/carq/crawler/Pair.class
+iii/snsi/iov/carq/crawler/Query.class
+iii/snsi/iov/carq/crawler/QueryUrl.class

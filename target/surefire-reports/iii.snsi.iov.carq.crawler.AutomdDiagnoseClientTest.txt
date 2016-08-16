@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: iii.snsi.iov.carq.crawler.AutomdDiagnoseClientTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1,213.665 sec
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1,500.789 sec

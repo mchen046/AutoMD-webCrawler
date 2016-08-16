@@ -6,6 +6,15 @@ public class AutomdProblem {
 	private String title;
 	private String description;
 	private List<String> inspectionSteps;
+
+	public AutomdProblem() {
+	}
+
+	public AutomdProblem(String title, String description, List<String> inspectionSteps) {
+		this.title = title;
+		this.description = description;
+		this.inspectionSteps = inspectionSteps;
+	}
 	
 	public String getTitle() {
 		return title;

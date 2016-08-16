@@ -1,0 +1,69 @@
+// queryUrl links to problem_id=0
+"title" : "",
+"aidPair" : {
+    "key" : "No",
+    "val" : "381"
+},
+"childWebPageList" : [ ],
+"problemList" : [ 
+	{
+		"title" : "",
+		"description" : "AutoMD™ Disclaimer: AutoMD is for informational use only and is intended to be used as a guide. We do not take any responsibility for automotive service decisions or automotive work decided upon as a result of using AutoMD. Always consult a certified automotive mechanic before making important automotive repair and service decisions. Use our Service Shop Finder to locate service shops and mechanics near you.",
+		...
+
+	}
+]
+
+// do not add the invalid problems to problemList
+{
+    "title" : "",
+    "aidPair" : {
+        "key" : "No",
+        "val" : "381"
+    },
+    "childWebPageList" : [ ],
+    "problemList" : [ ]
+},
+{
+    "title" : "",
+    "aidPair" : {
+        "key" : "Window Belt Strip",
+        "val" : "492"
+    },
+    "childWebPageList" : [ ],
+    "problemList" : [
+        {
+            "title" : "Damaged Window Belt Strip",
+            "description" : "Window belt strips can become damaged overtime due to weathering and regular use.  If the window belt strip is damaged you will want to replace it since it also helps keep water from reaching the inside of the door. If it is not replaced, water getting into the door could rust window motors, window regulators or other internal door components.",
+            "inspectionSteps" : [
+                "1) Locate and inspect the window belt strip. Check it for tears, cracking, the window belt strip can wear over time and can cause water to leak into the inside of the door which can rust the inside of the door and internal door components."
+            ]
+        }
+    ]
+}
+
+HashMap<String, List<AutomdProblem>>  problemListLibrary 
+problemListLibrary.put(grandChildWebPage.getAidPair().getKey(), problemList);
+
+problemListLibrary[
+    {
+        "key" : "No",
+        problemList varies for each section
+    },
+    {
+        "key" : "Window Belt Strip",
+        "problemList" : [
+            {
+                "title" : "Damaged Window Belt Strip",
+                "description" : "Window belt strips can become damaged overtime due to weathering and regular use.  If the window belt strip is damaged you will want to replace it since it also helps keep water from reaching the inside of the door. If it is not replaced, water getting into the door could rust window motors, window regulators or other internal door components.",
+                "inspectionSteps" : [
+                    "1) Locate and inspect the window belt strip. Check it for tears, cracking, the window belt strip can wear over time and can cause water to leak into the inside of the door which can rust the inside of the door and internal door components."
+                ]
+            }
+        ]
+    }
+
+]
+
+// 
+

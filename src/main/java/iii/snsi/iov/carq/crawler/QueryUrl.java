@@ -5,9 +5,12 @@ package iii.snsi.iov.carq.crawler;
  */
 public enum QueryUrl {
     BASEURL ("https://www.automd.com"),
-    TRANSLATEURL ("http://api.microsofttranslator.com/v2/Http.svc/Translate"),
+    GOOGLETRANSLATEURL ("https://translate.google.com/?langpair={0}&text={1}");
+
+    /*TRANSLATEURL ("http://api.microsofttranslator.com/v2/Http.svc/Translate"),
     TRANSLATEARRAYURL ("http://api.microsofttranslator.com/V2/Http.svc/TranslateArray"),
-    ACCESSTOKENURL ("https://datamarket.accesscontrol.windows.net/v2/OAuth2-13");
+    ACCESSTOKENURL ("https://datamarket.accesscontrol.windows.net/v2/OAuth2-13");*/
+
 
     private final String url;
 
