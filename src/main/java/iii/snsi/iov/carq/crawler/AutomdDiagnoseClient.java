@@ -142,9 +142,14 @@ public class AutomdDiagnoseClient {
 	public String translate(final String text, final String srcLang, final String targetLang)
 			throws Exception {
 
-		if(srcLang.equals(targetLang)){ // prevent unnecessary query
+		/* prevent unnecessary query
+		 * do not translate aid
+		 */
+
+		if(srcLang.equals(targetLang) || text.equals("aid")){
 			return text;
 		}
+
 
 		final String ENCODING = "UTF-8";
 		final String ID_RESULTBOX = "result_box";
@@ -158,6 +163,8 @@ public class AutomdDiagnoseClient {
 					URLEncoder.encode(text, ENCODING));
 
 			String response = getResponse(queryUrl, "GET", buildQueryParam(new AutomdWebPage(), QueryUrl.GOOGLETRANSLATEURL.url()));
+
+			System.out.println(response);
 
 			// parse html by Jsoup
 			doc = Jsoup.parse(response);

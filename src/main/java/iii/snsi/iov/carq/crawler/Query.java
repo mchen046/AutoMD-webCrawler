@@ -88,7 +88,8 @@ public class Query {
     // HTTP GET request
     public HttpURLConnection httpGet(String queryUrl, Map<String, String> queryParam) throws Exception {
 
-        //System.out.println("queryUrl: " + queryUrl);
+
+        System.out.println("queryUrl: " + queryUrl);
 
         String queryString = buildQueryString(queryParam);
 

@@ -3,14 +3,12 @@ package iii.snsi.iov.carq.crawler;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Map;
 
 public class AutomdDiagnoseClientTest {
@@ -52,7 +50,7 @@ public class AutomdDiagnoseClientTest {
 
 	private AutomdWebPage buildWebPageByFile(String language) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
-		AutomdWebPage masterWebPage = mapper.readValue(new File("/Users/myco/Documents/III/crawler/webPages_" + language + "_plain.json"), AutomdWebPage.class);
+		AutomdWebPage masterWebPage = mapper.readValue(new File("/Users/myco/Documents/III/crawler/JSON/webPages_" + language + "_plain.json"), AutomdWebPage.class);
 		return masterWebPage;
 	}
 
@@ -63,7 +61,7 @@ public class AutomdDiagnoseClientTest {
 		JavaType listOfProblemListEntryType = mapper.getTypeFactory().constructCollectionType(List.class, ProblemListEntry.class);
 
 		List<ProblemListEntry> problemListEntries =
-				mapper.readValue(new File("/Users/myco/Documents/III/crawler/problemListEntries_" +
+				mapper.readValue(new File("/Users/myco/Documents/III/crawler/JSON/problemListEntries_" +
 						language +
 						"_plain.json"), listOfProblemListEntryType);
 
@@ -102,27 +100,27 @@ public class AutomdDiagnoseClientTest {
 
 		// --------------------------- saving respective queried objects -------------------------------
 
-		masterWebPage = buildWebPageByQuery(amdClient);
+		/*masterWebPage = buildWebPageByQuery(amdClient);
 
 		HashMap<String, List<AutomdProblem>> problemListLibrary = amdClient.getProblemListLibrary();
 
 		List<ProblemListEntry> problemListEntries = buildProblemListEntries(problemListLibrary);
 
-		printToFile(amdClient, problemListEntries, "problemListEntries_"  + srcLang + "_plain.json", false);
-		printToFile(amdClient, problemListEntries, "problemListEntries__"  + srcLang + "_pretty.json", true);
+		printToFile(amdClient, problemListEntries, "./JSON/problemListEntries_"  + srcLang + "_plain.json", false);
+		printToFile(amdClient, problemListEntries, "./JSON/problemListEntries__"  + srcLang + "_pretty.json", true);
 
-		printToFile(amdClient, masterWebPage, "webPages_"  + srcLang + "_pretty.json", true);
-		printToFile(amdClient, masterWebPage, "webPages_"  + srcLang + "_plain.json", false);
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_pretty.json", true);
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_plain.json", false);*/
 
 		// --------------------------- end saving respective queried objects -------------------------------
 
 		// --------------------------- begin testing without querying -------------------------------
 
-		/*masterWebPage = buildWebPageByFile(srcLang);
+		masterWebPage = buildWebPageByFile(srcLang);
 
 		HashMap<String, List<AutomdProblem>> problemListLibrary = buildProblemListLibraryByFile(srcLang);
 
-		amdClient.setProblemListLibrary(problemListLibrary);*/
+		amdClient.setProblemListLibrary(problemListLibrary);
 
 		// --------------------------- end testing without querying -------------------------------
 
@@ -130,9 +128,9 @@ public class AutomdDiagnoseClientTest {
 
 		masterWebPage = amdClient.repairAndTranslate(masterWebPage, srcLang, targetLang);
 
-		printToFile(amdClient, masterWebPage, "webPages_"  + targetLang + "_pretty_repaired.json", true);
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + targetLang + "_pretty_repaired.json", true);
 
-		printToFile(amdClient, masterWebPage, "webPages_"  + targetLang + "_plain_repaired.json", false);
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + targetLang + "_plain_repaired.json", false);
 
 		amdClient.close();
 	}
