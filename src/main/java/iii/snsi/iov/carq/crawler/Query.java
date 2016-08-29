@@ -1,26 +1,18 @@
 package iii.snsi.iov.carq.crawler;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.net.ssl.HttpsURLConnection;
 import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-//import iii.snsi.iov.carq.crawler.AutomdDiagnoseClient.MicrosoftTranslatorToken;
 
 // https://www.mkyong.com/java/how-to-send-http-request-getpost-in-java/
 public class Query {
 
-	private final String USER_AGENT = "Mozilla/5.0";
+	private final String USER_AGENT = "AutoMD-webCrawler (https://github.com/mchen046/AutoMD-webCrawler)";
 	private static String cookie = "";
 	private static String access_token = "";
 
@@ -89,7 +81,7 @@ public class Query {
     public HttpURLConnection httpGet(String queryUrl, Map<String, String> queryParam) throws Exception {
 
 
-        System.out.println("queryUrl: " + queryUrl);
+        //System.out.println("queryUrl: " + queryUrl);
 
         String queryString = buildQueryString(queryParam);
 

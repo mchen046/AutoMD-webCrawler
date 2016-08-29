@@ -1,17 +1,12 @@
 package iii.snsi.iov.carq.crawler;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.net.HttpURLConnection;
-import java.net.URLEncoder;
-
-import java.text.MessageFormat;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.jsoup.Jsoup;
@@ -19,14 +14,15 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AutomdDiagnoseClient {
 
@@ -41,7 +37,6 @@ public class AutomdDiagnoseClient {
 	private String language = LanguageCode.ENGLISH.code();
 
 	// HashMap<String, problemList> -> List<ProblemListEntry> -> file -> List<ProblemListEntry -> HashMap<String, problemList>
-
 	private HashMap<String, List<AutomdProblem>> problemListLibrary = new HashMap<String, List<AutomdProblem>>();
 
 	public String getLanguage() {
@@ -164,7 +159,7 @@ public class AutomdDiagnoseClient {
 
 			String response = getResponse(queryUrl, "GET", buildQueryParam(new AutomdWebPage(), QueryUrl.GOOGLETRANSLATEURL.url()));
 
-			System.out.println(response);
+			//System.out.println(response);
 
 			// parse html by Jsoup
 			doc = Jsoup.parse(response);
@@ -196,7 +191,7 @@ public class AutomdDiagnoseClient {
 	 *  does not seem to affect the http response. The reason why it is left out is
 	 *  because the qid value is only retrievable from the /diagnose/next_qna query
 	 *  which originally requires the qid as a query parameter.
-	 * option: original Url set as either 1 or 2, should not affect the http response. 
+	 * option: original Url set as either 1 or 2, should not affect the http response.
 	 * 	default set to 1.
 	 */
 	private Map<String, String> buildQueryParam(AutomdWebPage webPage, String queryUrl){
@@ -204,7 +199,7 @@ public class AutomdDiagnoseClient {
 
 		if (queryUrl.equals(QueryUrl.BASEURL.url() + "/diagnose/select_area")){
 			// build vehicle queryParam
-			
+
 			// 2016 Toyota Avalon Hybrid Limited 4 Cyl 2.5L
 			queryParam.put("year", "117");
 			queryParam.put("make", "7");
@@ -228,7 +223,7 @@ public class AutomdDiagnoseClient {
 
 		return queryParam;
 	}
-	
+
 	public String getResponse(String queryUrl, String queryMethod, Map<String, String> queryParam) throws Exception {
 		Query query = new Query();
 		return query.getResponse((httpRequest(queryUrl, queryMethod, queryParam)));
@@ -242,22 +237,22 @@ public class AutomdDiagnoseClient {
 
 	private List<String> buildProblemIdQueryUrlList(AutomdWebPage currWebPage) throws Exception{
 		List<String> problemIdQueryUrlList = new ArrayList<String>();
-		
+
 		// step 3
 		String queryUrl = QueryUrl.BASEURL.url() + "/diagnose/problems";
 		Map<String, String> queryParam = buildQueryParam(currWebPage, queryUrl);
 		String response = getResponse(queryUrl, "GET", queryParam);
-		
+
 		//System.out.println(response);
-		
+
 		/* build list of individual problem_id http links
-		 * 
+		 *
 		 * Since we are sending the complete Url directly to the query methods,
 		 * queryParam is not needed.
-		 * 
+		 *
 		 * <input ... class="btn-continue-to-inspect button-blue button-size-34 pull-right"
 		 * ... onclick="...'/diagnose/inspection?problem_id=100'...">
-		 * 
+		 *
 		 */
 
 		Document doc = Jsoup.parse(response);
@@ -271,55 +266,81 @@ public class AutomdDiagnoseClient {
 				problemIdQueryUrlList.add(QueryUrl.BASEURL.url() + matcher.group(0));
 			}
 		}
-		
+
 		return problemIdQueryUrlList;
 	}
 
-	// extract data and build problem
+	/* extract data and build problem
+	 * <h2 class="flat-heading-h1 mb20">title</h2>
+        ...
+        <div class="col-sm-12 col-md-8 content-main-left clearfix">
+          ...
+          <p class="flat-paragraph">
+           description
+          </p>
+          ...
+          <div class="inspection-guide">
+            <div class="step clearfix">
+              <div class="number">1</div>
+              <div class="content">
+                <p class="flat-paragraph">
+                 inspectionStep content
+                </p>
+              </div>
+            </div>
+            <div class="step clearfix"> ... </div>
+            <div class="step clearfix"> ... </div>
+            <div class="step clearfix"> ... </div>
+            ...
+          </div>
+          ...
+        </div
+        ...
+	 */
 	private AutomdProblem buildProblem(String queryUrl) throws Exception{
 		AutomdProblem problem = new AutomdProblem();
-		
+
 		Map<String, String> queryParam = Collections.emptyMap();
 		String response = getResponse(queryUrl, "GET", queryParam);
-		
+
 		Document doc = Jsoup.parse(response);
-		
+
 		String title = doc.select("h2.flat-heading-h1.mb20").text();
 		String description = doc.select("div.col-sm-12.col-md-8.content-main-left.clearfix").get(0).select("p.flat-paragraph").get(0).text();
 
 		// create list of inspection steps
-		List<String> inspectionSteps = new ArrayList<String>();
-		
+		List<String> inspectionList = new ArrayList<String>();
+
 		// a single inspection guide with multiple stepElements (check later to see if there are multiple inspectionGuides, then refactor code)
 		Elements stepElements = doc.select("div.inspection-guide").get(0).select("div.step.clearfix");
 		//System.out.println("stepElements.size(): " + stepElements.size());
 		for(Element stepElement : stepElements){
 			String stepNumber = stepElement.select("div.number").text();
 			String stepContent = stepElement.select("div.content").get(0).select("p.flat-paragraph").text();
-			inspectionSteps.add(stepNumber + ") " + stepContent);
-			System.out.println(language + " - inspectionSteps: " + ++inspectionStepCount);
+			inspectionList.add(stepNumber + ") " + stepContent);
+			System.out.println(language + " - inspection steps: " + ++inspectionStepCount);
 		}
 
 		problem.setTitle(title);
 		problem.setDescription(description);
-		problem.setInspectionSteps(inspectionSteps);
-		
+		problem.setInspectionList(inspectionList);
+
 		/*System.out.println("title: " + title);
 		System.out.println("description: " + description);
-		System.out.println("inspectionSteps: " + inspectionSteps);*/
-		
+		System.out.println("inspectionList: " + inspectionList);*/
+
 		return problem;
 	}
-	
+
 	/* end of step 2 -> step 3 -> step 4 -> extract info
-	 * buildProblemIdUrlList -> 
+	 * buildProblemIdUrlList ->
 	 */
 	public List<AutomdProblem> buildProblemList(AutomdWebPage currWebPage) throws Exception{
 
 		//System.out.println("buildProblemList!");
 
 		List<String> queryUrlList = buildProblemIdQueryUrlList(currWebPage);
-		
+
 		// query each problem_id url
 		List<AutomdProblem> problemList = new ArrayList<AutomdProblem>();
 
@@ -344,7 +365,7 @@ public class AutomdDiagnoseClient {
 				e.printStackTrace();
 			}
 		});
-		
+
 		return problemList;
 	}
 
@@ -358,7 +379,7 @@ public class AutomdDiagnoseClient {
 		AutomdWebPage webPage = icWebPage;
 		List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
 
-		/* base case
+		/* recursive base case
 		 *
 		 * validate leaf node &&
 		 * empty problemList &&
@@ -385,7 +406,7 @@ public class AutomdDiagnoseClient {
 				AutomdProblem translatedProblem = problem;
 
 				List<String> translatedInspectionSteps = new ArrayList<String>();
-				for(String inspectionStep : problem.getInspectionSteps()){
+				for(String inspectionStep : problem.getInspectionList()){
 					translatedInspectionSteps.add(translate(inspectionStep, srcLang, targetLang));
 				}
 
@@ -460,12 +481,12 @@ public class AutomdDiagnoseClient {
 
 		return webPage;
 	}
-	
+
 	public List<AutomdWebPage> buildWebPageList(AutomdWebPage currWebPage, String queryUrl, String queryMethod) throws Exception {
-		
+
 		Map<String, String> queryParam = buildQueryParam(currWebPage, queryUrl);
 		String response = getResponse(queryUrl, queryMethod, queryParam);
-		
+
 		// check if response is in JSON format (begins with '{' and ends with '}')
 		if(response.charAt(0) == '{' && response.charAt(response.length() - 1) == '}'){
 			//System.out.println("is JSON!");
@@ -475,15 +496,15 @@ public class AutomdDiagnoseClient {
 			JSONObject data = (JSONObject) jsonObject.get("data");
 			response = (String) data.get("qna_content");
 		}
-		
-		/* Parse html document response to extract key : val 
-		 * 
+
+		/* Parse html document response to extract key : val
+		 *
 		 * It is written as O(n^3), but runtime is actually more closely resembled by O(n),
 		 * where n is the number of labels (key : val aid pairs found)
 		 *
 		 * <h3 class="diagnose-header flat-text-bold16 mb20" ... ></h3>
-		 * <div .. > 
-		 * 	<label> 
+		 * <div .. >
+		 * 	<label>
 		 * 	 <input value="aid_value" ... >
 		 *   <span class="label-text flat-paragraph" ... </span>
 		 * 	</label>
@@ -492,22 +513,22 @@ public class AutomdDiagnoseClient {
 		 * <h3 ... </h3>
 		 */
 		Document doc = Jsoup.parse(response);
-		
+
 		Elements h3Elements = doc.select("h3.diagnose-header.flat-text-bold16.mb20");
-		
+
 		List<AutomdWebPage> webPageList = new ArrayList<AutomdWebPage>();
 		for(Element h3 : h3Elements){ // for each webPage that exists on the response
-			
+
 			AutomdWebPage webPage = new AutomdWebPage();
 			List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
-		
+
 			webPage.setTitle(h3.text());
 
 			if(queryParam.size() != 0 && queryParam.containsKey("aid")){
 				//System.out.println("queryParam.get(0): " + queryParam.get(0).getKey() + " : " + queryParam.get(0).getVal());
 				webPage.setAidPair(new Pair<String, String>("aid", queryParam.get("aid")));
 			}
-			
+
 			Elements divs = h3.siblingElements();
 			//System.out.println("divs.size(): " + divs.size());
 			for(Element div : divs){ // for each column in the webPage
@@ -515,10 +536,10 @@ public class AutomdDiagnoseClient {
 				//System.out.println("labels.size(): " + labels.size());
 				for(Element label : labels){ // for each aidPair
 					AutomdWebPage childWebPage = new AutomdWebPage();
-					
+
 					String key = label.select("span.label-text.flat-paragraph").first().text();
 					String val = label.select("input").first().attr("value");
-					
+
 					// key - remove misc symptom detail (after the -)
 					/*if(key.indexOf(" -") != -1){
 						key = key.substring(0, key.indexOf(" -"));
@@ -542,15 +563,15 @@ public class AutomdDiagnoseClient {
 								" - " +
 								key.substring(indexOfDash + 2, key.length() - 1);
 					}
-					
-					System.out.println("childWebPage.aidPair added!: " + key + " : " + val);
-					
+
+					//System.out.println("childWebPage.aidPair added!: " + key + " : " + val);
+
 					Pair<String, String> aidPair = new Pair<String, String>(key, val);
 					childWebPage.setAidPair(aidPair);
 					childWebPageList.add(childWebPage);
 				}
 			}
-			
+
 			//System.out.println("webPage.getChildWebPageList().size(): " + webPage.getChildWebPageList().size());
 			webPage.setChildWebPageList(childWebPageList);
 			webPageList.add(webPage);
@@ -569,11 +590,11 @@ public class AutomdDiagnoseClient {
 		//System.out.println(currWebPage.getAidPair().getKey() + " : " + currWebPage.getAidPair().getVal() + "\n");
 		// grab all section block webPages with a title header on the currWebPage
 		List<AutomdWebPage> icChildWebPageList = amdClient.buildWebPageList(currWebPage, queryUrl, queryMethod);
-		
+
 		List<AutomdWebPage> childWebPageList = new ArrayList<AutomdWebPage>();
-		
+
 		//System.out.println(String.format("icChildWebPageList.size() (children retrieved from %s): %d", queryUrl, icChildWebPageList.size()));
-		
+
 		if(icChildWebPageList.size() == 1 && icChildWebPageList.get(0).getChildWebPageList().size() == 0){ // base case
 			return childWebPageList;
 		}
@@ -587,13 +608,13 @@ public class AutomdDiagnoseClient {
 		 */
 		icChildWebPageList.parallelStream().forEach(icChildWebPage -> {
 			try {
-				
+
 				AutomdWebPage childWebPage = icChildWebPage;
 
 				//System.out.println("childWebPage.getTitle()): " + childWebPage.getTitle());
-				
+
 				List<AutomdWebPage> grandChildWebPageList = new ArrayList<AutomdWebPage>();
-				
+
 				icChildWebPage.getChildWebPageList().parallelStream().forEach(icGrandChildWebPage -> {
 					try{
 
@@ -605,7 +626,7 @@ public class AutomdDiagnoseClient {
 						List<AutomdWebPage> gGrandChildWebPageListQna = buildChildWebPageList(grandChildWebPage, QueryUrl.BASEURL.url() + "/diagnose/qna", "GET", amdClient);
 
 						grandChildWebPage.setChildWebPageList( gGrandChildWebPageListQna.size() != 0 ? gGrandChildWebPageListQna : buildChildWebPageList(grandChildWebPage, QueryUrl.BASEURL.url() + "/diagnose/next_qna", "GET", amdClient));
-						
+
 						// (step 3 -> step 4)
 						if(grandChildWebPage.getChildWebPageList().size() == 0){
 							List<AutomdProblem> problemList = amdClient.buildProblemList(grandChildWebPage);
@@ -624,7 +645,7 @@ public class AutomdDiagnoseClient {
 							 * 	Doing so is redundant and it is also impossible to replace common keys
 							 * 	with different problemLists.
 							 *
-							 * 	The ideal method would be to have each problem attributed to a key...?
+							 * 	The ideal method would be to have each problem attributed to a key...to be further explored
 							 *
 							 */
 							if(problemList.size() != 0 &&
@@ -635,26 +656,26 @@ public class AutomdDiagnoseClient {
 								problemListLibrary.put(grandChildWebPage.getAidPair().getKey(), problemList);
 							}
 						}
-						
+
 						grandChildWebPageList.add(grandChildWebPage);
-						
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 				});
 
 				childWebPage.setChildWebPageList(grandChildWebPageList);
-				
+
 				childWebPageList.add(childWebPage);
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		});
-		
+
 		return childWebPageList;
 	}
-	
+
 	public HtmlPage getPage(String url) throws FailingHttpStatusCodeException, MalformedURLException, IOException {
 		HtmlPage page = client.getPage(url);
 		return page;

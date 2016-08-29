@@ -5,15 +5,15 @@ import java.util.List;
 public class AutomdProblem {
 	private String title;
 	private String description;
-	private List<String> inspectionSteps;
+	private List<String> inspectionList;
 
 	public AutomdProblem() {
 	}
 
-	public AutomdProblem(String title, String description, List<String> inspectionSteps) {
+	public AutomdProblem(String title, String description, List<String> inspectionList) {
 		this.title = title;
 		this.description = description;
-		this.inspectionSteps = inspectionSteps;
+		this.inspectionList = inspectionList;
 	}
 	
 	public String getTitle() {
@@ -28,10 +28,10 @@ public class AutomdProblem {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public List<String> getInspectionSteps() {
-		return inspectionSteps;
+	public List<String> getInspectionList() {
+		return inspectionList;
 	}
-	public void setInspectionSteps(List<String> inspectionSteps) {
-		this.inspectionSteps = inspectionSteps;
+	public void setInspectionList(List<String> inspectionList) {
+		this.inspectionList = inspectionList;
 	}
 }

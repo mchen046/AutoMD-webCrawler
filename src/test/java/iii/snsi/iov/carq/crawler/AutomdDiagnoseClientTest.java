@@ -3,12 +3,13 @@ package iii.snsi.iov.carq.crawler;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.*;
-import java.net.URL;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import java.util.Map;
 
 public class AutomdDiagnoseClientTest {
@@ -84,10 +85,6 @@ public class AutomdDiagnoseClientTest {
 		return problemListEntries;
 	}
 
-	private void executeWithLanguage(String language) throws Exception {
-
-	}
-
 	public void testInit() throws Exception {
 		AutomdDiagnoseClient amdClient = new AutomdDiagnoseClient();
 		amdClient.init(true);
@@ -100,7 +97,7 @@ public class AutomdDiagnoseClientTest {
 
 		// --------------------------- saving respective queried objects -------------------------------
 
-		/*masterWebPage = buildWebPageByQuery(amdClient);
+		masterWebPage = buildWebPageByQuery(amdClient);
 
 		HashMap<String, List<AutomdProblem>> problemListLibrary = amdClient.getProblemListLibrary();
 
@@ -110,19 +107,25 @@ public class AutomdDiagnoseClientTest {
 		printToFile(amdClient, problemListEntries, "./JSON/problemListEntries__"  + srcLang + "_pretty.json", true);
 
 		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_pretty.json", true);
-		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_plain.json", false);*/
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_plain.json", false);
 
 		// --------------------------- end saving respective queried objects -------------------------------
 
 		// --------------------------- begin testing without querying -------------------------------
 
-		masterWebPage = buildWebPageByFile(srcLang);
+		/*masterWebPage = buildWebPageByFile(srcLang);
 
 		HashMap<String, List<AutomdProblem>> problemListLibrary = buildProblemListLibraryByFile(srcLang);
 
-		amdClient.setProblemListLibrary(problemListLibrary);
+		amdClient.setProblemListLibrary(problemListLibrary);*/
 
 		// --------------------------- end testing without querying -------------------------------
+
+		masterWebPage = amdClient.repairAndTranslate(masterWebPage, srcLang, srcLang);
+
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_pretty_repaired.json", true);
+
+		printToFile(amdClient, masterWebPage, "./JSON/webPages_"  + srcLang + "_plain_repaired.json", false);
 
 		String targetLang = LanguageCode.TRADITIONAL_CHINESE.code();
 
